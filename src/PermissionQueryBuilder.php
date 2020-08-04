@@ -62,7 +62,10 @@ class PermissionQueryBuilder
         $query = $roleClass = app(PermissionRegistrar::class)->getPermissionUserClass()->query();
 
         if ($this->target) {
-            $targetPath = $this->target->targetPath();
+            $targetPath = array_search(get_class($this->target), config('permission.targets'));
+            if (method_exists($this->target, 'targetPath')) {
+                $targetPath = $this->target->targetPath();
+            }
 
             $query->where(function ($query) use ($targetPath) {
                 $query->whereNull('target_path')
