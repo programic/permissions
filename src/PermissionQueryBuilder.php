@@ -2,8 +2,6 @@
 
 namespace Programic\Permission;
 
-use App\Models\PermissionUser;
-use App\Models\User;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 
@@ -72,7 +70,9 @@ class PermissionQueryBuilder
                     ->orWhere('target_path', 'LIKE', $targetPath . '%');
 
                 if ($this->includeDown) {
-                    $query->whereTargetPath($targetPath);
+                    $query->orWhere(function ($query) use ($targetPath) {
+                        $query->whereTargetPath($targetPath);
+                    });
                 }
             });
         }
