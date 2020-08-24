@@ -71,7 +71,14 @@ class PermissionQueryBuilder
 
                 if ($this->includeDown) {
                     $query->orWhere(function ($query) use ($targetPath) {
-                        $query->whereTargetPath($targetPath);
+                        $paths = explode('-', $targetPath);
+                        for ($i = 0; $i < substr_count($targetPath, '-'); $i++) {
+                            array_pop($paths);
+                            $targetPathDown = (is_array($paths)) ? implode('-', $paths) : $paths;
+                            if ($targetPathDown) {
+                                $query->orWhere('target_path', 'LIKE', $targetPathDown . '%');
+                            }
+                        }
                     });
                 }
             });
