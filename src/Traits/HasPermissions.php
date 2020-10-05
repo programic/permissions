@@ -166,7 +166,7 @@ trait HasPermissions
             if (is_null($targetPath)) {
                 $targets['null_'.$abbreviation] = true;
             } elseif ($targetPath) {
-                $targetChunks = explode('-', $targetPath);
+                $targetChunks = array_filter(explode('-', $targetPath));
                 $last = array_pop($targetChunks);
                 $abbreviation = $last[0];
                 $abbreviationId = (int) filter_var($last, FILTER_SANITIZE_NUMBER_INT);
