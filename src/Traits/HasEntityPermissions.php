@@ -112,7 +112,9 @@ trait HasEntityPermissions
             $query->role($role);
         }
 
-        return $query->targetPath($targetPath);
+        return $query->whereHas('permissions', function($query) use ($targetPath) {
+            return $query->targetPath($targetPath);
+        });
     }
 
     /**
