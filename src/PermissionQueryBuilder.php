@@ -142,6 +142,10 @@ class PermissionQueryBuilder
                 $targets['all_m'] = array_merge($targets['all_m'], $targets['all_t']);
             }
 
+            if ($targets['null_t'] === true) {
+                $targets['null_m'] = true;
+            }
+
             $builder->where(function ($query) use ($targets, $permissions) {
                 $magazinePermission = in_array('view-magazine', $permissions) && $targets['null_m'] === false;
                 $query->when($magazinePermission, function ($permissionQuery) use ($targets) {
