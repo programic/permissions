@@ -6,6 +6,7 @@ use hisorange\BrowserDetect\Exceptions\Exception;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use PDO;
 use Programic\Permission\PermissionRegistrar;
 use Programic\Permission\Scopes\PermissionScope;
 
@@ -50,17 +51,19 @@ class SyncUserPermissions extends Command
         $userRoles = $this->optionsQuery($permissionRegistrar->getRoleUserClass()->query())->get();
 
         foreach ($userRoles as $role_user) {
-
             $permissions = $permissionRegistrar->getPermissionRoleClass()->where('role_name', $role_user->role_name)->get();
             foreach ($permissions as $permission) {
                 $this->recursive($permission, $role_user);
             }
         }
 
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+
         $this->optionsQuery($this->permissionUserClass->query())
             ->whereNotIn('id', $this->permission_ids)
             ->delete();
 
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->output->success('Permissions synced');
