@@ -5,7 +5,7 @@ namespace Programic\Permission\Scopes;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Programic\Permission\PermissionQueryBuilder;
+use Programic\Permission\PermissionRegistrar;
 
 class PermissionScope implements Scope
 {
@@ -26,6 +26,9 @@ class PermissionScope implements Scope
      */
     public function apply(Builder $builder, Model $model)
     {
-        PermissionQueryBuilder::setGlobalScope($builder, $this->permissions, $model);
+        $permissionRegistrar = app(PermissionRegistrar::class);
+        $queryBuilderInstance = $permissionRegistrar->getPermissionQueryBuilderClass();
+
+        $queryBuilderInstance::setGlobalScope($builder, $this->permissions, $model);
     }
 }

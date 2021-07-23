@@ -21,7 +21,7 @@ trait HasRole
     {
         $attach = [
             'user_id' => $this->id,
-            'role_name' => $roleName,
+            'role_name' => $roleName->name ?? $roleName,
         ];
 
         if ($target !== null) {

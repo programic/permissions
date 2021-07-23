@@ -4,6 +4,8 @@ namespace Programic\Permission\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Programic\Permission\Contracts\Role as RoleContract;
+use Programic\Permission\PermissionRegistrar;
+use Programic\Permission\Traits\HasPermissions;
 
 
 class Role extends Model implements RoleContract
@@ -26,16 +28,16 @@ class Role extends Model implements RoleContract
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'role_user')
-            ->withPivot(['confirmed', 'active', 'target_type', 'target_id']);
+        return $this->belongsToMany(app(PermissionRegistrar::class)->getUserClass(), 'role_user')
+            ->withPivot(['target_type', 'target_id']);
     }
 
     public function targetUsers($target)
     {
-        return $this->belongsToMany(User::class, 'role_user')
+        return $this->belongsToMany(app(PermissionRegistrar::class)->getUserClass(), 'role_user')
             ->wherePivot('target_type', get_class($target))
             ->wherePivot('target_id', $target->id)
-            ->withPivot(['confirmed', 'active', 'target_type', 'target_id']);
+            ->withPivot(['target_type', 'target_id']);
     }
 
     /**
@@ -70,5 +72,15 @@ class Role extends Model implements RoleContract
         }
 
         return $this;
+    }
+
+    /**
+     * @param $permission
+     * @param null $target
+     * @return bool
+     */
+    public function hasPermission($permission, $target = null) : bool
+    {
+        return $this->permissions()->where('name', $permission)->exists();
     }
 }

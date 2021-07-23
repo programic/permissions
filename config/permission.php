@@ -19,7 +19,11 @@ return [
 
     'models' => [
 
-        'user' => App\User::class,
+        /*
+         *  Specify custom user model
+         *  Default is the model specified in config -> auth.providers.users.model
+         */
+        'user' => null,
 
         /*
          * When using the "HasPermissions" trait from this package, we need to know which
@@ -51,6 +55,24 @@ return [
 
         'permission_inheritance' => Programic\Permission\Models\PermissionInheritance::class,
 
+    ],
+
+    /*
+    * Query Builder Settings
+    */
+    'query_builder' => [
+        /*
+         *  Permissions for the global scope.
+         *  This setting determines which permission is the main permission for going deeper/ higher in the order.
+         *  Use
+         */
+        'global_permission' => 'view',
+
+        /*
+         *  Permission Query Builder
+         *  where the magic happens
+         */
+        'class' => Programic\Permission\PermissionQueryBuilder::class,
     ],
 ];
 

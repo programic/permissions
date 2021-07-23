@@ -2,8 +2,10 @@
 
 namespace Programic\Permission;
 
+use \Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class PermissionQueryBuilder
 {
@@ -15,9 +17,9 @@ class PermissionQueryBuilder
     protected $userId = null;
     protected $permissions = [];
 
-    public function __construct($userId, $target = null)
+    public function __construct($userId = null, $target = null)
     {
-        $this->userId = $userId;
+        $this->userId = $userId ?? auth()->user()->id;
         if ($target) {
             $this->target = $target;
         }
@@ -57,7 +59,7 @@ class PermissionQueryBuilder
             return $this->query;
         }
 
-        $query = $roleClass = app(PermissionRegistrar::class)->getPermissionUserClass()->query();
+        $query = app(PermissionRegistrar::class)->getPermissionUserClass()->query();
 
         if ($this->target) {
             $targetPath = array_search(get_class($this->target), config('permission.targets'));
@@ -123,8 +125,12 @@ class PermissionQueryBuilder
         return $this;
     }
 
-    public static function setGlobalScope($builder, $permissions, $model, $userId = null)
-    {
+    public static function setGlobalScope(
+        EloquentBuilder $builder,
+        $permissions,
+        $model,
+        $userId = null
+    ) : EloquentBuilder {
         if (auth()->check() || $userId) {
             if (is_array($permissions) === false) {
                 $permissions = [$permissions];
@@ -137,33 +143,25 @@ class PermissionQueryBuilder
             }
 
             $targets = $user->getTargetsFromPermissions($permissions, $model);
-            if (isset($targets['t'])) {
-                $targets['m'] = array_merge($targets['m'], $targets['t']);
-                $targets['all_m'] = array_merge($targets['all_m'], $targets['all_t']);
-            }
+            $permissionsConfig = config('permission');
 
-            if ($targets['null_t'] === true) {
-                $targets['null_m'] = true;
-            }
+            $builder->where(function ($query) use ($targets, $permissions, $permissionsConfig) {
+                foreach ($permissionsConfig['abbreviation'] as $abbreviation => $model) {
+                    $tableName = (new $model)->getTable();
+                    $permissionName = Str::singular($tableName);
+                    $globalPermission = $permissionsConfig['query_builder']['global_permission'];
+                    $permission = $globalPermission . '-' . $permissionName;
+                    $magazinePermission = in_array($permission, $permissions)
+                        && $targets['null_' . $abbreviation] === false;
 
-            $builder->where(function ($query) use ($targets, $permissions) {
-                $magazinePermission = in_array('view-magazine', $permissions) && $targets['null_m'] === false;
-                $query->when($magazinePermission, function ($permissionQuery) use ($targets) {
-                    $permissionQuery->whereIn('magazines.id', $targets['all_m']);
-                });
-
-                $editionPermission = in_array('view-edition', $permissions) && $targets['null_e'] === false;
-                $query->when($editionPermission, function ($permissionQuery) use ($targets) {
-                    $permissionQuery->whereIn('magazine_id', $targets['m'])
-                        ->orWhereIn('editions.id', $targets['all_e']);
-                });
-
-                $articlePermission = in_array('view-article', $permissions) && $targets['null_a'] === false;
-                $query->when($articlePermission, function ($permissionQuery) use ($targets) {
-                    $permissionQuery->whereIn('magazine_id', $targets['m'])
-                        ->orWhereIn('edition_id', $targets['e'])
-                        ->orWhereIn('articles.id', $targets['a']);
-                });
+                    $query->when($magazinePermission, function ($permissionQuery) use (
+                        $targets,
+                        $tableName,
+                        $abbreviation
+                    ) {
+                        $permissionQuery->whereIn($tableName . '.id', $targets['all_' . $abbreviation]);
+                    });
+                }
             });
         }
 

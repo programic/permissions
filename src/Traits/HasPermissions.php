@@ -14,7 +14,7 @@ trait HasPermissions
      */
     public function permissionsForTarget($target) : PermissionQueryBuilder
     {
-        return new PermissionQueryBuilder($this->id, $target);
+        return new PermissionQueryBuilder($this->id ?? $this->name, $target);
     }
 
     /**
@@ -22,7 +22,7 @@ trait HasPermissions
      */
     public function globalPermissions() : PermissionQueryBuilder
     {
-        return new PermissionQueryBuilder($this->id);
+        return new PermissionQueryBuilder($this->id ?? $this->name);
     }
 
     /**

@@ -31,6 +31,8 @@ class PermissionRegistrar
     /** @var string */
     protected $permissionInheritanceClass;
 
+    protected $permissionQueryBuilderClass;
+
     /**
      * PermissionRegistrar constructor.
      */
@@ -47,6 +49,7 @@ class PermissionRegistrar
         $this->permissionUserClass = config('permission.models.permission_user');
         $this->permissionRoleClass = config('permission.models.permission_role');
         $this->permissionInheritanceClass = config('permission.models.permission_inheritance');
+        $this->permissionQueryBuilderClass = config('permission.query_builder.class');
     }
 
     /**
@@ -106,5 +109,10 @@ class PermissionRegistrar
     public function getPermissionInheritanceClass()
     {
         return app($this->permissionInheritanceClass);
+    }
+
+    public function getPermissionQueryBuilderClass()
+    {
+        return app($this->permissionQueryBuilderClass);
     }
 }

@@ -51,7 +51,7 @@ class CreatePermissionUser extends Migration
                 ->onDelete('cascade');
 
             $table->index('target_path');
-            $table->index(['target_type', 'target_id'], 'target');
+            $table->index(['target_type', 'target_id'], 'target_index');
         });
     }
 

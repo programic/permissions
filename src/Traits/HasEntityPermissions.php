@@ -4,7 +4,6 @@ namespace Programic\Permission\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Programic\Permission\PermissionQueryBuilder;
 use Programic\Permission\PermissionRegistrar;
 
 trait HasEntityPermissions
@@ -138,6 +137,8 @@ trait HasEntityPermissions
 
     public function scopePermission(Builder $query, $permission, $userId = null)
     {
-        return PermissionQueryBuilder::setGlobalScope($query, $permission, $this, $userId);
+        $queryBuilderInstance = app(PermissionRegistrar::class)->getPermissionQueryBuilderClass();
+
+        return $queryBuilderInstance::setGlobalScope($query, $permission, $this, $userId);
     }
 }
