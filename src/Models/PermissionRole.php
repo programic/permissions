@@ -10,6 +10,8 @@ class PermissionRole extends Pivot
     public $incrementing = true;
     public $timestamps = false;
 
+    protected $guarded = ['id'];
+
     public function role()
     {
         return $this->belongsTo(config('permission.models')['role']);

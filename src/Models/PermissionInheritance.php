@@ -8,4 +8,6 @@ class PermissionInheritance extends Model
 {
     public $timestamps = false;
     public $incrementing = false;
+
+    protected $guarded = ['id'];
 }
